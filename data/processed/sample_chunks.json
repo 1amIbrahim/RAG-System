@@ -1,0 +1,9 @@
+[
+  {
+    "chunk_id": "sample.pdf_0",
+    "source": "sample.pdf",
+    "page": 1,
+    "text": "Artificial Intelligence Overview\nArtificial Intelligence (AI) refers to the simulation of human intelligence in machines that are\nprogrammed to think like humans and mimic their actions. The term may also be applied to any\nmachine that exhibits traits associated with a human mind such as learning and problem-solving.\nCommon applications of AI include expert systems, natural language processing, speech\nrecognition, and machine vision.",
+    "tokens": 81
+  }
+]
