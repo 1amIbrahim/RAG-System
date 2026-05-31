@@ -1,3 +1,15 @@
+---
+title: RAG System
+emoji: 📄
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+sdk_version: 1.50.0
+app_file: ui/app.py
+python_version: "3.9"
+pinned: false
+---
+
 # RAG System
 
 A Retrieval-Augmented Generation (RAG) system for querying document collections.
