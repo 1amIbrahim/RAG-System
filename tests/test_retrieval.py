@@ -55,7 +55,7 @@ def test_retrieval():
         print(f"   Source: {chunk['source']}, Page: {chunk['page']}")
         print(f"   Text: {chunk['text'][:100]}...\n")
     
-    print("✅ Retrieval system works!")
+    print("[OK] Retrieval system works!")
 
 if __name__ == "__main__":
     test_retrieval()

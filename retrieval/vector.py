@@ -37,7 +37,7 @@ class VectorIndex:
         self.index = faiss.IndexFlatL2(self.dimension)  # ← CHANGED
         self.index.add(embeddings.astype('float32'))
         
-        print(f"✅ FAISS index built with {self.index.ntotal} vectors")
+        print(f"[OK] FAISS index built with {self.index.ntotal} vectors")
     
     def search(self, query: str, top_k: int = 5) -> List[Tuple[Dict, float]]:
         """
@@ -83,7 +83,7 @@ class VectorIndex:
         with open(chunks_path, 'w', encoding='utf-8') as f:
             json.dump(self.chunks, f, indent=2, ensure_ascii=False)
         
-        print(f"✅ Index saved to {index_path}")
+        print(f"[OK] Index saved to {index_path}")
     
     def load(self, index_path: Path, chunks_path: Path):
         """Load index and chunks from disk"""
@@ -92,4 +92,4 @@ class VectorIndex:
         with open(chunks_path, 'r', encoding='utf-8') as f:
             self.chunks = json.load(f)
         
-        print(f"✅ Index loaded with {len(self.chunks)} chunks")
+        print(f"[OK] Index loaded with {len(self.chunks)} chunks")

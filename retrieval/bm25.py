@@ -28,7 +28,7 @@ class BM25Index:
         tokenized_chunks = [self.tokenize(chunk["text"]) for chunk in chunks]
         
         self.index = BM25Okapi(tokenized_chunks)
-        print(f"✅ BM25 index built")
+        print(f"[OK] BM25 index built")
     
     def search(self, query: str, top_k: int = 5) -> List[Tuple[Dict, float]]:
         """
@@ -43,12 +43,14 @@ class BM25Index:
         """
         if self.index is None:
             raise ValueError("Index not built. Call build_index() first.")
-        
+
         tokenized_query = self.tokenize(query)
         scores = self.index.get_scores(tokenized_query)
-        
-        # Get top-k indices
+
+        # BM25 IDF can be negative with small corpora; shift so minimum score is 0
+        min_score = min(scores)
+        if min_score < 0:
+            scores = scores - min_score
+
         top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
-        
-        results = [(self.chunks[idx], float(scores[idx])) for idx in top_indices]
-        return results
+        return [(self.chunks[idx], float(scores[idx])) for idx in top_indices]

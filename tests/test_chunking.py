@@ -14,9 +14,9 @@ def test_chunking():
 
     output_path = Path("data/processed/sample_chunks.json")
     save_chunks(chunks, output_path)
-    print(f"✅ Saved {len(chunks)} chunks to {output_path}")
+    print(f"[OK] Saved {len(chunks)} chunks to {output_path}")
 
 
 if __name__ == "__main__":
     test_chunking()
-    print("✅ Chunking works")
+    print("[OK] Chunking works")
