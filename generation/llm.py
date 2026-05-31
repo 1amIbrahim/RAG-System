@@ -24,11 +24,18 @@ def _generate_ollama(prompt: str, model: str) -> str:
 
 
 def _generate_hf(prompt: str) -> str:
-    from transformers import pipeline
+    from transformers import pipeline, GPT2Tokenizer
 
-    pipe = pipeline("text-generation", model="gpt2", max_new_tokens=256)
-    result = pipe(prompt, do_sample=False)[0]["generated_text"]
-    # Strip the prompt prefix so we return only the generated continuation
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    max_new = 128
+    max_input = 1024 - max_new
+    tokens = tokenizer.encode(prompt)
+    if len(tokens) > max_input:
+        tokens = tokens[:max_input]
+        prompt = tokenizer.decode(tokens)
+
+    pipe = pipeline("text-generation", model="gpt2", max_new_tokens=max_new)
+    result = pipe(prompt, do_sample=True)[0]["generated_text"]
     return result[len(prompt):].strip()
 
 
@@ -41,7 +48,7 @@ def generate(prompt: str, model: str = _DEFAULT_MODEL) -> str:
     """
     if _ollama_available():
         return _generate_ollama(prompt, model)
-    print("⚠️  Ollama not running — falling back to HuggingFace GPT-2 (demo only)")
+    print("[WARN] Ollama not running -- falling back to HuggingFace GPT-2 (demo only)")
     return _generate_hf(prompt)
 
 

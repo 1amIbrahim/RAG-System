@@ -1,6 +1,10 @@
 import json
+import sys
 import tempfile
 from pathlib import Path
+
+# Ensure project root is on the path when Streamlit launches from ui/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import streamlit as st
 
@@ -56,9 +60,10 @@ with st.sidebar:
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 tmp.write(f.read())
                 tmp_path = Path(tmp.name)
+            # File must be closed before PyMuPDF/docx can open it on Windows
 
             pages = load_document(tmp_path)
-            chunks = chunker.chunk(pages, source=f.name)
+            chunks = chunker.chunk_pages(pages, source=f.name)
             all_chunks.extend(chunks)
             progress.progress((i + 1) / len(uploaded))
 
