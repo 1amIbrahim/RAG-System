@@ -30,30 +30,20 @@ def _generate_ollama(prompt: str, model: str) -> str:
 
 def _generate_hf_api(prompt: str) -> str:
     from huggingface_hub import InferenceClient
-    client = InferenceClient(model=_HF_MODEL, token=_hf_token())
+    token = _hf_token()
+    if not token:
+        raise EnvironmentError(
+            "HF_TOKEN environment variable is not set. "
+            "Add it as a Space secret or set it locally to use the HF Inference API."
+        )
+    client = InferenceClient(model=_HF_MODEL, token=token)
     return client.text_generation(prompt, max_new_tokens=512, temperature=0.1).strip()
-
-
-def _generate_hf_local(prompt: str) -> str:
-    from transformers import pipeline
-    pipe = pipeline("text2text-generation", model="google/flan-t5-base", max_new_tokens=256)
-    return pipe(prompt[:2048])[0]["generated_text"].strip()
 
 
 def generate(prompt: str, model: str = _DEFAULT_MODEL) -> str:
     if _ollama_available():
         return _generate_ollama(prompt, model)
-
-    token = _hf_token()
-    if token:
-        try:
-            print("[INFO] Using HuggingFace Inference API")
-            return _generate_hf_api(prompt)
-        except Exception as e:
-            print(f"[WARN] HF Inference API failed: {e} -- falling back to local model")
-
-    print("[WARN] No Ollama or HF token -- falling back to flan-t5-base (demo quality)")
-    return _generate_hf_local(prompt)
+    return _generate_hf_api(prompt)
 
 
 def answer(

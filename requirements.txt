@@ -27,7 +27,6 @@ safetensors
 scikit-learn
 scipy
 sentence-transformers
-sentencepiece
 streamlit
 sympy
 threadpoolctl
