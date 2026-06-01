@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from retrieval.embeddings import EmbeddingModel
@@ -99,3 +100,7 @@ def query_endpoint(req: QueryRequest):
             for c in top_chunks
         ],
     }
+
+
+# Serve React build — must be last so API routes take priority
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
