@@ -5,7 +5,7 @@ colorFrom: blue
 colorTo: indigo
 sdk: streamlit
 sdk_version: 1.50.0
-app_file: ui/app.py
+app_file: app.py
 python_version: "3.9"
 pinned: false
 ---
