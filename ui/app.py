@@ -51,41 +51,47 @@ with st.sidebar:
     )
 
     if uploaded and st.button("Ingest documents"):
-        chunker = SemanticChunker()
-        all_chunks = []
-        progress = st.progress(0)
+        try:
+            chunker = SemanticChunker()
+            all_chunks = []
+            progress = st.progress(0)
 
-        for i, f in enumerate(uploaded):
-            suffix = Path(f.name).suffix
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                tmp.write(f.read())
-                tmp_path = Path(tmp.name)
-            # File must be closed before PyMuPDF/docx can open it on Windows
+            for i, f in enumerate(uploaded):
+                suffix = Path(f.name).suffix
+                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                    tmp.write(f.read())
+                    tmp_path = Path(tmp.name)
 
-            pages = load_document(tmp_path)
-            chunks = chunker.chunk_pages(pages, source=f.name)
-            all_chunks.extend(chunks)
-            progress.progress((i + 1) / len(uploaded))
+                pages = load_document(tmp_path)
+                chunks = chunker.chunk_pages(pages, source=f.name)
+                all_chunks.extend(chunks)
+                progress.progress((i + 1) / len(uploaded))
 
-        out_path = Path("data/processed/uploaded_chunks.json")
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        save_chunks(all_chunks, out_path)
+            out_path = Path("data/processed/uploaded_chunks.json")
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            save_chunks(all_chunks, out_path)
 
-        st.session_state["chunks"] = all_chunks
-        st.session_state["retriever"] = _build_indices(all_chunks)
-        st.success(f"Ingested {len(all_chunks)} chunks from {len(uploaded)} file(s)")
+            st.session_state["chunks"] = all_chunks
+            st.session_state["retriever"] = _build_indices(all_chunks)
+            st.success(f"Ingested {len(all_chunks)} chunks from {len(uploaded)} file(s)")
+        except Exception as exc:
+            st.error(f"Ingestion failed: {exc}")
+            st.exception(exc)
 
-    # Also allow loading existing processed chunks
     if st.button("Load existing chunks"):
-        path = Path("data/processed/sample_chunks.json")
-        if path.exists():
-            with open(path) as f:
-                chunks = json.load(f)
-            st.session_state["chunks"] = chunks
-            st.session_state["retriever"] = _build_indices(chunks)
-            st.success(f"Loaded {len(chunks)} existing chunks")
-        else:
-            st.error("No existing chunks found. Upload documents first.")
+        try:
+            path = Path("data/processed/sample_chunks.json")
+            if not path.exists():
+                st.error(f"File not found: {path.resolve()}")
+            else:
+                with open(path) as f:
+                    chunks = json.load(f)
+                st.session_state["chunks"] = chunks
+                st.session_state["retriever"] = _build_indices(chunks)
+                st.success(f"Loaded {len(chunks)} existing chunks")
+        except Exception as exc:
+            st.error(f"Load failed: {exc}")
+            st.exception(exc)
 
 # ── Main: chat interface ──────────────────────────────────────────────────────
 if "messages" not in st.session_state:
