@@ -6,7 +6,7 @@ from .prompts import build_prompt
 
 _OLLAMA_URL = "http://localhost:11434/api/generate"
 _DEFAULT_MODEL = "mistral"
-_HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
+_HF_MODEL = "HuggingFaceH4/zephyr-7b-beta"
 
 
 def _ollama_available() -> bool:
@@ -36,7 +36,7 @@ def _generate_hf_api(prompt: str) -> str:
             "HF_TOKEN environment variable is not set. "
             "Add it as a Space secret or set it locally to use the HF Inference API."
         )
-    client = InferenceClient(model=_HF_MODEL, token=token)
+    client = InferenceClient(model=_HF_MODEL, token=token, provider="hf-inference")
     response = client.chat_completion(
         messages=[{"role": "user", "content": prompt}],
         max_tokens=512,
