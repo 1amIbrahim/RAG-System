@@ -24,19 +24,10 @@ def _generate_ollama(prompt: str, model: str) -> str:
 
 
 def _generate_hf(prompt: str) -> str:
-    from transformers import pipeline, GPT2Tokenizer
+    from transformers import pipeline
 
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    max_new = 128
-    max_input = 1024 - max_new
-    tokens = tokenizer.encode(prompt)
-    if len(tokens) > max_input:
-        tokens = tokens[:max_input]
-        prompt = tokenizer.decode(tokens)
-
-    pipe = pipeline("text-generation", model="gpt2", max_new_tokens=max_new)
-    result = pipe(prompt, do_sample=True)[0]["generated_text"]
-    return result[len(prompt):].strip()
+    pipe = pipeline("text2text-generation", model="google/flan-t5-base", max_new_tokens=256)
+    return pipe(prompt[:2048])[0]["generated_text"].strip()
 
 
 def generate(prompt: str, model: str = _DEFAULT_MODEL) -> str:

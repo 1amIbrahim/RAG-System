@@ -22,8 +22,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Pre-download models at build time so the container starts instantly
 RUN python -c "\
 from sentence_transformers import SentenceTransformer, CrossEncoder; \
+from transformers import T5ForConditionalGeneration, T5Tokenizer; \
 SentenceTransformer('BAAI/bge-small-en-v1.5'); \
 CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2'); \
+T5ForConditionalGeneration.from_pretrained('google/flan-t5-base'); \
+T5Tokenizer.from_pretrained('google/flan-t5-base'); \
 print('Models cached.')"
 
 # Copy app code
