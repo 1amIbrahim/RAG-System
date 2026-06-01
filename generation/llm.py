@@ -37,7 +37,12 @@ def _generate_hf_api(prompt: str) -> str:
             "Add it as a Space secret or set it locally to use the HF Inference API."
         )
     client = InferenceClient(model=_HF_MODEL, token=token)
-    return client.text_generation(prompt, max_new_tokens=512, temperature=0.1).strip()
+    response = client.chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=512,
+        temperature=0.1,
+    )
+    return response.choices[0].message.content.strip()
 
 
 def generate(prompt: str, model: str = _DEFAULT_MODEL) -> str:
