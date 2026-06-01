@@ -93,6 +93,6 @@ with gr.Blocks(title="RAG System") as demo:
             load_btn.click(load_existing, inputs=None, outputs=status)
 
         with gr.Column(scale=3):
-            gr.ChatInterface(fn=chat, type="messages")
+            gr.ChatInterface(fn=chat)
 
 demo.launch()
