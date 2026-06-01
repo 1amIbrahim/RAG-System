@@ -27,6 +27,9 @@ safetensors
 scikit-learn
 scipy
 sentence-transformers
+fastapi
+uvicorn
+python-multipart
 streamlit
 sympy
 threadpoolctl
