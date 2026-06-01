@@ -27,8 +27,6 @@ safetensors
 scikit-learn
 scipy
 sentence-transformers
-gradio==4.44.1
-pyaudioop
 streamlit
 sympy
 threadpoolctl
