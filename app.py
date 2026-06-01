@@ -18,6 +18,8 @@ embed_model = EmbeddingModel()
 reranker_model = CrossEncoderReranker()
 print("Models ready.")
 
+_retriever = None
+
 
 def _build_retriever(chunks):
     v = VectorIndex(embed_model)
@@ -27,38 +29,39 @@ def _build_retriever(chunks):
     return HybridRetriever(v, b)
 
 
-def ingest(files, state):
+def ingest(files):
+    global _retriever
     from ingestion.loaders import load_document
     from ingestion.chunker import SemanticChunker
 
     if not files:
-        return state, "No files selected."
+        return "No files selected."
     chunker = SemanticChunker()
     all_chunks = []
     for f in files:
         pages = load_document(Path(f.name))
         chunks = chunker.chunk_pages(pages, source=Path(f.name).name)
         all_chunks.extend(chunks)
-    state["retriever"] = _build_retriever(all_chunks)
-    return state, f"Ingested {len(all_chunks)} chunks from {len(files)} file(s). Ready to chat."
+    _retriever = _build_retriever(all_chunks)
+    return f"Ingested {len(all_chunks)} chunks from {len(files)} file(s). Ready to chat."
 
 
-def load_existing(state):
+def load_existing():
+    global _retriever
     path = Path("data/processed/sample_chunks.json")
     if not path.exists():
-        return state, "No existing chunks found. Upload documents first."
+        return "No existing chunks found. Upload documents first."
     with open(path) as f:
         chunks = json.load(f)
-    state["retriever"] = _build_retriever(chunks)
-    return state, f"Loaded {len(chunks)} chunks. Ready to chat."
+    _retriever = _build_retriever(chunks)
+    return f"Loaded {len(chunks)} chunks. Ready to chat."
 
 
-def chat(message, history, state):
-    retriever = state.get("retriever")
-    if retriever is None:
+def chat(message, history):
+    if _retriever is None:
         return "Please upload documents or load existing chunks first."
     try:
-        retrieved = retriever.search(message, top_k=10)
+        retrieved = _retriever.search(message, top_k=10)
         retrieved_chunks = [c for c, _ in retrieved]
         reranked = reranker_model.rerank(message, retrieved_chunks, top_k=5)
         top_chunks = [c for c, _ in reranked]
@@ -74,7 +77,6 @@ def chat(message, history, state):
 
 with gr.Blocks(title="RAG System") as demo:
     gr.Markdown("# RAG System\nUpload documents and ask questions grounded in their content.")
-    state = gr.State({})
 
     with gr.Row():
         with gr.Column(scale=1):
@@ -87,10 +89,10 @@ with gr.Blocks(title="RAG System") as demo:
             ingest_btn = gr.Button("Ingest", variant="primary")
             load_btn = gr.Button("Load existing chunks")
             status = gr.Textbox(interactive=False, show_label=False, placeholder="Status...")
-            ingest_btn.click(ingest, [files, state], [state, status])
-            load_btn.click(load_existing, [state], [state, status])
+            ingest_btn.click(ingest, inputs=files, outputs=status)
+            load_btn.click(load_existing, inputs=None, outputs=status)
 
         with gr.Column(scale=3):
-            gr.ChatInterface(fn=chat, additional_inputs=[state], type="messages")
+            gr.ChatInterface(fn=chat, type="messages")
 
 demo.launch()
