@@ -104,30 +104,34 @@ if query := st.chat_input("Ask a question about your documents..."):
             st.markdown(query)
 
         with st.chat_message("assistant"):
-            with st.spinner("Retrieving and generating..."):
-                retriever: HybridRetriever = st.session_state["retriever"]
-                retrieved = retriever.search(query, top_k=10)
-                retrieved_chunks = [c for c, _ in retrieved]
+            try:
+                with st.spinner("Retrieving and generating..."):
+                    retriever: HybridRetriever = st.session_state["retriever"]
+                    retrieved = retriever.search(query, top_k=10)
+                    retrieved_chunks = [c for c, _ in retrieved]
 
-                reranked = reranker.rerank(query, retrieved_chunks, top_k=5)
-                top_chunks = [c for c, score in reranked]
+                    reranked = reranker.rerank(query, retrieved_chunks, top_k=5)
+                    top_chunks = [c for c, score in reranked]
 
-                result = answer(query, top_chunks)
+                    result = answer(query, top_chunks)
 
-            st.markdown(result["answer"])
+                st.markdown(result["answer"])
 
-            with st.expander("Sources"):
-                for i, chunk in enumerate(top_chunks, 1):
-                    st.markdown(
-                        f"**[{i}]** `{chunk.get('source', 'unknown')}` "
-                        f"— page {chunk.get('page', '?')}"
-                    )
-                    st.caption(chunk["text"][:300] + ("..." if len(chunk["text"]) > 300 else ""))
+                with st.expander("Sources"):
+                    for i, chunk in enumerate(top_chunks, 1):
+                        st.markdown(
+                            f"**[{i}]** `{chunk.get('source', 'unknown')}` "
+                            f"— page {chunk.get('page', '?')}"
+                        )
+                        st.caption(chunk["text"][:300] + ("..." if len(chunk["text"]) > 300 else ""))
 
-            with st.expander("Debug: retrieval scores"):
-                for chunk, score in reranked:
-                    st.text(f"{score:.4f}  {chunk.get('source','?')} p.{chunk.get('page','?')}")
+                with st.expander("Debug: retrieval scores"):
+                    for chunk, score in reranked:
+                        st.text(f"{score:.4f}  {chunk.get('source','?')} p.{chunk.get('page','?')}")
 
-        st.session_state["messages"].append(
-            {"role": "assistant", "content": result["answer"]}
-        )
+                st.session_state["messages"].append(
+                    {"role": "assistant", "content": result["answer"]}
+                )
+            except Exception as exc:
+                st.error(f"Error during query processing:\n\n```\n{exc}\n```")
+                st.exception(exc)
