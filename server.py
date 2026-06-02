@@ -25,8 +25,6 @@ print("Models ready.")
 
 _retriever = None
 
-app = FastAPI()
-
 
 def _build_retriever(chunks):
     v = VectorIndex(embed_model)
@@ -34,6 +32,20 @@ def _build_retriever(chunks):
     b = BM25Index()
     b.build_index(chunks)
     return HybridRetriever(v, b)
+
+
+# Auto-load demo chunks baked into the image
+_demo_path = Path("data/processed/sample_chunks.json")
+if _demo_path.exists():
+    try:
+        with open(_demo_path) as f:
+            _demo_chunks = json.load(f)
+        _retriever = _build_retriever(_demo_chunks)
+        print(f"Auto-loaded {len(_demo_chunks)} demo chunks from {_demo_path}.")
+    except Exception as e:
+        print(f"Auto-load failed: {e}")
+
+app = FastAPI()
 
 
 @app.get("/")
