@@ -3,6 +3,7 @@ data/index/
 data/chroma/
 data/processed/uploaded_chunks.json
 static/
+demo_docs/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

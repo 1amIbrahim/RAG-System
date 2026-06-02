@@ -45,9 +45,9 @@ def main():
             pages = load_document(f)
             chunks = chunker.chunk_pages(pages, source=f.name)
             all_chunks.extend(chunks)
-            print(f"  → {len(chunks)} chunks from {len(pages)} page(s)")
+            print(f"  -> {len(chunks)} chunks from {len(pages)} page(s)")
         except Exception as e:
-            print(f"  ✗ Skipped ({e})")
+            print(f"  SKIP ({e})")
 
     out_path = Path("data/processed/sample_chunks.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
