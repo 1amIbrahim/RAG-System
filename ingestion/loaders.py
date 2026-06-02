@@ -1,4 +1,3 @@
-# ingestion/loaders.py
 from pathlib import Path
 import fitz  # PyMuPDF
 import docx
