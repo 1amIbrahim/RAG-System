@@ -27,10 +27,11 @@ safetensors
 scikit-learn
 scipy
 sentence-transformers
+anthropic
+openai
 fastapi
 uvicorn
 python-multipart
-streamlit
 sympy
 threadpoolctl
 tiktoken
