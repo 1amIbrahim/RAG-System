@@ -140,7 +140,33 @@ function FileItem({ name, onRemove }) {
   )
 }
 
-function Sidebar({ onLoad, onIngest, status, isReady }) {
+function DemoStatus({ info }) {
+  if (!info) return null
+  return (
+    <div className="demo-status">
+      <div className="demo-status-header">
+        <span className="ready-dot" />
+        <span className="demo-status-title">Demo ready</span>
+        <span className="demo-status-count">{info.chunks} chunks</span>
+      </div>
+      <div className="demo-source-list">
+        {info.sources.map((s, i) => {
+          const filename = s.split(/[/\\]/).pop()
+          const ext = filename.split('.').pop().toUpperCase()
+          const extColors = { PDF: '#ef4444', DOCX: '#3b82f6', TXT: '#10b981' }
+          return (
+            <div key={i} className="demo-source-item">
+              <span className="file-ext" style={{ background: extColors[ext] || '#6b7280' }}>{ext}</span>
+              <span className="demo-source-name" title={s}>{filename}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function Sidebar({ onLoad, onIngest, status, isReady, demoInfo }) {
   const [files, setFiles] = useState([])
   const [dragging, setDragging] = useState(false)
   const ingesting = status?.type === 'loading'
@@ -167,11 +193,12 @@ function Sidebar({ onLoad, onIngest, status, isReady }) {
           </svg>
         </div>
         <span className="sidebar-title">RAG System</span>
-        {isReady && <span className="ready-dot" title="Documents loaded" />}
       </div>
 
+      {demoInfo?.loaded && <DemoStatus info={demoInfo} />}
+
       <section className="sidebar-section">
-        <label className="section-label">Upload Documents</label>
+        <label className="section-label">Upload Your Own</label>
         <label
           className={`file-drop ${dragging ? 'drag-over' : ''}`}
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -199,14 +226,17 @@ function Sidebar({ onLoad, onIngest, status, isReady }) {
         </button>
       </section>
 
-      <div className="divider"><span>or</span></div>
-
-      <button className="btn btn-secondary" onClick={onLoad} disabled={ingesting}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        Load Existing Chunks
-      </button>
+      {!demoInfo?.loaded && (
+        <>
+          <div className="divider"><span>or</span></div>
+          <button className="btn btn-secondary" onClick={onLoad} disabled={ingesting}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Load Existing Chunks
+          </button>
+        </>
+      )}
 
       {status && status.type !== 'loading' && (
         <div className={`status-box ${status.type}`}>{status.message}</div>
@@ -237,8 +267,19 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [docStatus, setDocStatus] = useState(null)
   const [isReady, setIsReady] = useState(false)
+  const [demoInfo, setDemoInfo] = useState(null)
   const bottomRef = useRef(null)
   const textareaRef = useAutoResize(input)
+
+  useEffect(() => {
+    fetch('/status')
+      .then(r => r.json())
+      .then(data => {
+        setDemoInfo(data)
+        if (data.loaded) setIsReady(true)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -262,7 +303,11 @@ export default function App() {
       const res = await fetch('/ingest', { method: 'POST', body: form })
       const data = await res.json()
       if (data.error) { setDocStatus({ type: 'error', message: data.error }); setIsReady(false) }
-      else { setDocStatus({ type: 'success', message: `Ingested ${data.chunks} chunks` }); setIsReady(true) }
+      else {
+        setDocStatus({ type: 'success', message: `Ingested ${data.chunks} chunks` })
+        setIsReady(true)
+        setDemoInfo(null)
+      }
     } catch (e) { setDocStatus({ type: 'error', message: e.message }); setIsReady(false) }
   }
 
@@ -294,7 +339,7 @@ export default function App() {
 
   return (
     <div className="layout">
-      <Sidebar onLoad={handleLoad} onIngest={handleIngest} status={docStatus} isReady={isReady} />
+      <Sidebar onLoad={handleLoad} onIngest={handleIngest} status={docStatus} isReady={isReady} demoInfo={demoInfo} />
 
       <main className="chat-pane">
         <header className="chat-header">

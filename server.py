@@ -48,6 +48,15 @@ if _demo_path.exists():
 app = FastAPI()
 
 
+@app.get("/status")
+def status():
+    if _retriever is None:
+        return {"loaded": False, "chunks": 0, "sources": []}
+    chunks = _retriever.vector_index.chunks
+    sources = sorted(set(c.get("source", "unknown") for c in chunks))
+    return {"loaded": True, "chunks": len(chunks), "sources": sources}
+
+
 @app.get("/")
 def root():
     return FileResponse("static/index.html")
